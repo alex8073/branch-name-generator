@@ -6,22 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Branch Name Generator</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script>
-        (function() {
-            try {
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                document.documentElement.className = 'theme-' + savedTheme;
-            } catch (e) {
-                document.documentElement.className = 'theme-light';
-            }
-        })();
-    </script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
-    <div class="theme-toggle" id="themeToggle" role="button" tabindex="0" aria-label="Переключить тему">
-        <svg class="theme-icon theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему" title="Переключить тему">
+        <svg class="theme-icon theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -32,59 +22,75 @@
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
         </svg>
-        <svg class="theme-icon theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="theme-icon theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
         </svg>
-    </div>
+    </button>
 
-    <div class="container">
+    <main class="container">
         <h1>🎯 Branch Name Generator</h1>
 
-        <form id="branchForm">
-            <div class="section">
+        <form id="branchForm" aria-label="Форма генерации названия ветки">
+            <section class="section" aria-labelledby="branch-type-label">
                 <div class="form-group">
-                    <label>Тип ветки:</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="feature" name="branchType" value="feature" checked>
-                            <label for="feature">feature</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="hotfix" name="branchType" value="hotfix">
-                            <label for="hotfix">hotfix</label>
+                    <label id="branch-type-label">Тип ветки:</label>
+                    <div class="radio-group-wrapper">
+                        <div class="radio-group" role="radiogroup">
+                            <div class="radio-item">
+                                <input type="radio" id="feature" name="branchType" value="feature" checked aria-describedby="taskIdHint">
+                                <label for="feature">feature</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="hotfix" name="branchType" value="hotfix">
+                                <label for="hotfix">hotfix</label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="taskId">ID задачи:</label>
-                    <input type="text" id="taskId" placeholder="ABC-1234 или https://site.com/ABC-1234">
-                    <div class="error-message" id="taskIdError"></div>
-                    <div class="hint">Можно вставить ID задачи или ссылку на задачу</div>
+                    <input type="text" id="taskId" name="taskId" placeholder="ABC-1234 или https://site.com/ABC-1234" aria-describedby="taskIdError taskIdHint" aria-invalid="false">
+                    <div class="error-message" id="taskIdError" role="alert" aria-live="polite"></div>
+                    <div class="hint" id="taskIdHint">Можно вставить ID задачи или ссылку на задачу</div>
                 </div>
-            </div>
+            </section>
 
-            <div class="section">
+            <section class="section" aria-labelledby="branch-name-label">
                 <div class="form-group">
-                    <label for="branchName">Название ветки:</label>
-                    <input type="text" id="branchName" placeholder="Введите название ветки...">
-                    <div class="error-message" id="branchNameError"></div>
+                    <label for="branchName" id="branch-name-label">Название ветки:</label>
+                    <input type="text" id="branchName" name="branchName" placeholder="Введите название ветки..." aria-describedby="branchNameError" aria-invalid="false">
+                    <div class="error-message" id="branchNameError" role="alert" aria-live="polite"></div>
                 </div>
-            </div>
+            </section>
 
-            <button type="submit">✨ Сгенерировать</button>
+            <div class="button-wrapper">
+                <button type="submit">✨ Сгенерировать</button>
+            </div>
         </form>
 
-        <div class="result-container" id="resultContainer">
-            <div class="result-label">Результат:</div>
+        <section class="result-container" id="resultContainer" aria-labelledby="result-label">
+            <div class="result-label" id="result-label">Результат:</div>
             <div class="result-value">
-                <input type="text" class="result-input" id="resultInput" disabled>
-                <button type="button" class="copy-btn" id="copyBtn" disabled>Копировать</button>
+                <input type="text" class="result-input" id="resultInput" disabled aria-label="Сгенерированное название ветки" aria-describedby="lengthInfo">
+                <button type="button" class="copy-btn" id="copyBtn" disabled aria-label="Копировать название ветки в буфер обмена">Копировать</button>
             </div>
-            <div class="length-info" id="lengthInfo"></div>
-        </div>
-    </div>
+            <div class="length-info" id="lengthInfo" aria-live="polite"></div>
+        </section>
+    </main>
 
+    <script>
+        (function() {
+            try {
+                const THEME_STORAGE_KEY = 'theme';
+                const DEFAULT_THEME = 'light';
+                const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_THEME;
+                document.documentElement.className = 'theme-' + savedTheme;
+            } catch (e) {
+                document.documentElement.className = 'theme-light';
+            }
+        })();
+    </script>
     <script src="js/functions.js"></script>
 </body>
 

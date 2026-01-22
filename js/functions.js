@@ -1,3 +1,11 @@
+const CONSTANTS = {
+    MAX_BRANCH_LENGTH: 40,
+    TOAST_DISPLAY_DURATION: 2500,
+    TOAST_HIDE_ANIMATION: 300,
+    THEME_STORAGE_KEY: 'theme',
+    DEFAULT_THEME: 'light'
+};
+
 const elements = {
     form: document.getElementById('branchForm'),
     taskId: document.getElementById('taskId'),
@@ -12,23 +20,27 @@ const elements = {
 };
 
 const errorUtils = {
+    getErrorElement(input) {
+        if (!input?.id) return null;
+        return elements.errors[input.id] || null;
+    },
+    
     clear(input) {
         if (!input) return;
         input.classList.remove('error');
         
-        const errorElement = input.id === 'taskId' ? elements.errors.taskId : 
-                            input.id === 'branchName' ? elements.errors.branchName : null;
+        const errorElement = this.getErrorElement(input);
         if (errorElement) {
             errorElement.classList.remove('show');
             errorElement.textContent = '';
         }
     },
+    
     show(input, message) {
         if (!input) return;
         input.classList.add('error');
         
-        const errorElement = input.id === 'taskId' ? elements.errors.taskId : 
-                            input.id === 'branchName' ? elements.errors.branchName : null;
+        const errorElement = this.getErrorElement(input);
         if (errorElement) {
             errorElement.textContent = message;
             errorElement.classList.add('show');
@@ -36,20 +48,59 @@ const errorUtils = {
     }
 };
 
+const showToast = (message, type = 'success') => {
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = document.createElement('div');
+    icon.className = 'toast-icon';
+    if (type === 'success') {
+        icon.textContent = '✓';
+    } else if (type === 'error') {
+        icon.textContent = '✕';
+    }
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = 'toast-message';
+    messageEl.textContent = message;
+    
+    toast.appendChild(icon);
+    toast.appendChild(messageEl);
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => {
+            toast.remove();
+        }, CONSTANTS.TOAST_HIDE_ANIMATION);
+    }, CONSTANTS.TOAST_DISPLAY_DURATION);
+};
+
 const validators = {
-    isValidBranchName: (str) => {
-        if (!str) return false;
+    isValidBranchName(str) {
+        if (!str || typeof str !== 'string') return false;
+        const trimmed = str.trim();
+        if (trimmed.length === 0) return false;
         const allowedPattern = /^[a-zA-Z0-9\s_-]+$/;
-        return allowedPattern.test(str);
+        return allowedPattern.test(trimmed);
     },
-    extractTaskId: (input) => {
-        if (!input) return '';
-        const match = input.match(/([A-Z]+-\d+)/i);
+    
+    extractTaskId(input) {
+        if (!input || typeof input !== 'string') return '';
+        const match = input.match(/([A-Z]{2,}-\d+)/i);
         return match ? match[1].toUpperCase() : '';
     },
-    normalizeBranchName: (name) => {
+    
+    normalizeBranchName(name) {
+        if (!name || typeof name !== 'string') return '';
         return name
             .toLowerCase()
+            .trim()
             .replace(/[^a-z0-9\s_-]/g, '')
             .replace(/[\s-]+/g, '_')
             .replace(/_+/g, '_')
@@ -59,13 +110,12 @@ const validators = {
 
 document.querySelectorAll('input[name="branchType"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
+        const isHotfix = e.target.value === 'hotfix';
         if (elements.taskId) {
-            elements.taskId.disabled = e.target.value === 'hotfix';
+            elements.taskId.disabled = isHotfix;
             errorUtils.clear(elements.taskId);
         }
-        if (elements.branchName) {
-            errorUtils.clear(elements.branchName);
-        }
+        errorUtils.clear(elements.branchName);
     });
 });
 
@@ -83,7 +133,7 @@ const applyTheme = (theme) => {
     }
     
     try {
-        localStorage.setItem('theme', theme || 'light');
+        localStorage.setItem(CONSTANTS.THEME_STORAGE_KEY, theme || CONSTANTS.DEFAULT_THEME);
     } catch (e) {
         console.warn('Не удалось сохранить тему в localStorage:', e);
     }
@@ -114,11 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (!htmlHasTheme && !bodyHasTheme) {
         try {
-            const savedTheme = localStorage.getItem('theme') || 'light';
+            const savedTheme = localStorage.getItem(CONSTANTS.THEME_STORAGE_KEY) || CONSTANTS.DEFAULT_THEME;
             applyTheme(savedTheme);
         } catch (e) {
             console.warn('Не удалось прочитать тему из localStorage:', e);
-            applyTheme('light');
+            applyTheme(CONSTANTS.DEFAULT_THEME);
         }
     } else if (htmlHasTheme && document.body) {
         const htmlTheme = Array.from(document.documentElement.classList)
@@ -134,13 +184,19 @@ const updateResultLength = () => {
     if (!elements.resultInput || !elements.lengthInfo) return;
     
     const length = elements.resultInput.value.length;
-    const isValid = length <= 40;
+    const isValid = length <= CONSTANTS.MAX_BRANCH_LENGTH;
     elements.lengthInfo.className = `length-info ${isValid ? 'valid' : 'invalid'}`;
     
     if (isValid) {
         elements.lengthInfo.textContent = `Длина: ${length} символов ✓`;
     } else {
-        elements.lengthInfo.innerHTML = `Длина: ${length} символов ⚠<br>Превышает максимальную длину (40 символов)`;
+        const warningText = document.createTextNode(`Длина: ${length} символов ⚠`);
+        const breakLine = document.createElement('br');
+        const errorText = document.createTextNode(`Превышает максимальную длину (${CONSTANTS.MAX_BRANCH_LENGTH} символов)`);
+        elements.lengthInfo.textContent = '';
+        elements.lengthInfo.appendChild(warningText);
+        elements.lengthInfo.appendChild(breakLine);
+        elements.lengthInfo.appendChild(errorText);
     }
 };
 
@@ -168,56 +224,47 @@ if (elements.form) {
         if (!branchTypeRadio) return;
         
         const branchType = branchTypeRadio.value;
-        const taskIdValue = elements.taskId ? elements.taskId.value.trim() : '';
-        const branchNameValue = elements.branchName ? elements.branchName.value.trim() : '';
+        const taskIdValue = elements.taskId?.value.trim() || '';
+        const branchNameValue = elements.branchName?.value.trim() || '';
 
-        if (elements.taskId) {
-            errorUtils.clear(elements.taskId);
-        }
-        if (elements.branchName) {
-            errorUtils.clear(elements.branchName);
-        }
+        errorUtils.clear(elements.taskId);
+        errorUtils.clear(elements.branchName);
 
         if (branchType === 'feature') {
             if (!taskIdValue) {
-                if (elements.taskId) {
-                    errorUtils.show(elements.taskId, 'Пожалуйста, заполните ID задачи');
-                }
+                errorUtils.show(elements.taskId, 'Пожалуйста, заполните ID задачи');
                 return;
             }
 
             const isUrl = /^https?:\/\//i.test(taskIdValue);
             if (!isUrl && !validators.isValidBranchName(taskIdValue)) {
-                if (elements.taskId) {
-                    errorUtils.show(elements.taskId, 'Используйте только латинские буквы, цифры и дефисы');
-                }
+                errorUtils.show(elements.taskId, 'Используйте только латинские буквы, цифры и дефисы');
                 return;
             }
 
             const extractedTaskId = validators.extractTaskId(taskIdValue);
             if (!extractedTaskId) {
-                if (elements.taskId) {
-                    errorUtils.show(elements.taskId, 'Неверный формат ID (ожидается PROJECT-123)');
-                }
+                errorUtils.show(elements.taskId, 'Неверный формат ID (ожидается PROJECT-123)');
                 return;
             }
         }
 
         if (!branchNameValue) {
-            if (elements.branchName) {
-                errorUtils.show(elements.branchName, 'Пожалуйста, заполните это поле');
-            }
+            errorUtils.show(elements.branchName, 'Пожалуйста, заполните это поле');
             return;
         }
 
         if (!validators.isValidBranchName(branchNameValue)) {
-            if (elements.branchName) {
-                errorUtils.show(elements.branchName, 'Используйте только латинские буквы, цифры и дефисы');
-            }
+            errorUtils.show(elements.branchName, 'Используйте только латинские буквы, цифры и дефисы');
             return;
         }
 
         const normalized = validators.normalizeBranchName(branchNameValue);
+        if (!normalized) {
+            errorUtils.show(elements.branchName, 'Название ветки не может быть пустым');
+            return;
+        }
+        
         let result = '';
 
         if (branchType === 'hotfix') {
@@ -236,54 +283,43 @@ if (elements.form) {
         }
 
         updateResultLength();
-
-        const submitButton = elements.form.querySelector('button[type="submit"]');
-        if (submitButton) {
-            const originalText = submitButton.textContent;
-            submitButton.textContent = '✓';
-            
-            setTimeout(() => {
-                submitButton.textContent = originalText;
-            }, 800);
-        }
     });
 }
 
+const copyToClipboard = async (text) => {
+    if (!text) return false;
+    
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } else {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            return successful;
+        }
+    } catch (err) {
+        console.error('Ошибка при копировании:', err);
+        return false;
+    }
+};
+
 if (elements.copyBtn && elements.resultInput) {
     elements.copyBtn.addEventListener('click', async () => {
-        const textToCopy = elements.resultInput.value;
+        const textToCopy = elements.resultInput?.value;
         if (!textToCopy) return;
 
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                await navigator.clipboard.writeText(textToCopy);
-            } else {
-                elements.resultInput.select();
-                elements.resultInput.setSelectionRange(0, 99999);
-                const successful = document.execCommand('copy');
-                if (!successful) {
-                    throw new Error('Не удалось скопировать текст');
-                }
-            }
-
-            const originalText = elements.copyBtn.textContent;
-            elements.copyBtn.textContent = '✓';
-            elements.copyBtn.classList.add('copied');
-
-            setTimeout(() => {
-                elements.copyBtn.textContent = originalText;
-                elements.copyBtn.classList.remove('copied');
-            }, 800);
-        } catch (err) {
-            console.error('Ошибка при копировании:', err);
-            const originalText = elements.copyBtn.textContent;
-            elements.copyBtn.textContent = 'Ошибка';
-            elements.copyBtn.classList.add('error');
-
-            setTimeout(() => {
-                elements.copyBtn.textContent = originalText;
-                elements.copyBtn.classList.remove('error');
-            }, 2000);
+        const success = await copyToClipboard(textToCopy);
+        if (success) {
+            showToast('Скопировано!', 'success');
+        } else {
+            showToast('Ошибка при копировании', 'error');
         }
     });
 }

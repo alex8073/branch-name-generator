@@ -1,27 +1,26 @@
 :root {
-    --primary: #667eea;
-    --primary-dark: #764ba2;
-    --primary-focus: rgba(102, 126, 234, 0.1);
-    --primary-shadow: rgba(102, 126, 234, 0.35);
-    --success: #28a745;
-    --success-dark: #218838;
-    --error: #dc3545;
-    --text: #2d3748;
-    --text-muted: #4a5568;
-    --text-hint: #718096;
-    --border: #e2e8f0;
-    --border-hover: #cbd5e0;
+    --primary: #0969da;
+    --primary-dark: #0860ca;
+    --primary-focus: rgba(9, 105, 218, 0.1);
+    --primary-shadow: rgba(9, 105, 218, 0.35);
+    --success: #2da44e;
+    --success-dark: #2c974b;
+    --error: #cf222e;
+    --error-hover: #a40e26;
+    --text: #24292f;
+    --text-muted: #57606a;
+    --text-hint: #656d76;
+    --border: #d0d7de;
+    --border-hover: #afb8c1;
     --bg-white: #ffffff;
-    --bg-light: #edf2f7;
-    --bg-disabled: #f7fafc;
+    --bg-light: #f6f8fa;
+    --bg-disabled: #f6f8fa;
+    --button-primary: #2da44e;
+    --button-primary-hover: #2c974b;
     --text-sm: 0.875rem;
-    /* 14px */
     --text-base: 1rem;
-    /* 16px */
     --text-lg: 1.25rem;
-    /* 20px */
     --text-xl: 1.5rem;
-    /* 24px */
 }
 
 * {
@@ -32,7 +31,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #d0f7fc 0%, #e6fbfe 100%);
+    background: var(--bg-white);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -49,29 +48,29 @@ body {
     top: 24px;
     right: 24px;
     background: var(--bg-white);
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
     z-index: 10;
 }
 
 .theme-toggle:hover {
+    background: var(--bg-light);
     border-color: var(--border-hover);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .theme-icon {
     position: absolute;
     color: var(--text);
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, color 0.2s ease;
 }
 
 .theme-icon-sun {
@@ -90,18 +89,10 @@ body.theme-dark .theme-icon-moon {
     opacity: 1;
 }
 
-html:not([class*="theme-"]),
-html.theme-light {
-    --primary: #06b6d4;
-    --primary-dark: #0891b2;
-    --primary-focus: rgba(6, 182, 212, 0.1);
-    --primary-shadow: rgba(6, 182, 212, 0.35);
-}
-
 html:not([class*="theme-"]) body,
 body:not([class*="theme-"]),
 body.theme-light {
-    background: linear-gradient(135deg, #d0f7fc 0%, #e6fbfe 100%);
+    background: var(--bg-white);
 }
 
 html.theme-dark {
@@ -120,55 +111,81 @@ html.theme-dark {
     --success: #3fb950;
     --success-dark: #2ea043;
     --error: #f85149;
+    --button-primary: #238636;
+    --button-primary-hover: #2ea043;
+    --bg-body: #0d1117;
+    --bg-container: #161b22;
+    --bg-toggle: #21262d;
+    --bg-toggle-hover: #30363d;
+    --text-icon: #c9d1d9;
+    --error-hover: #da3633;
+    --text-on-button: #ffffff;
 }
 
 html.theme-dark,
 body.theme-dark {
-    background: #0d1117;
+    background: var(--bg-body);
 }
 
 body.theme-dark .container {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    background: var(--bg-container);
+    border: 1px solid var(--border);
+    box-shadow: none;
 }
 
 body.theme-dark .theme-toggle {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    border-color: var(--border);
+    background: var(--bg-toggle);
+    border: 1px solid var(--border);
+    box-shadow: none;
 }
 
 body.theme-dark .theme-toggle:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background: var(--bg-toggle-hover);
+    border-color: var(--border-hover);
+}
+
+body.theme-dark .theme-icon {
+    color: var(--text-icon);
 }
 
 body.theme-dark button:not(.copy-btn) {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.35);
+    background: var(--button-primary);
+    box-shadow: none;
 }
 
-body.theme-dark button:not(.copy-btn):hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+body.theme-dark button:not(.copy-btn):hover:not(:disabled),
+body.theme-dark .submit-btn:hover:not(:disabled) {
+    background: var(--button-primary-hover);
+}
+
+body.theme-dark button:not(.copy-btn):active:not(:disabled) {
+    background: var(--button-primary);
 }
 
 body.theme-dark .copy-btn {
-    box-shadow: 0 6px 20px rgba(63, 185, 80, 0.35);
+    background: var(--success);
+    box-shadow: none;
 }
 
 body.theme-dark .copy-btn:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(63, 185, 80, 0.5);
+    background: var(--success-dark);
 }
 
 body.theme-dark .copy-btn:disabled {
+    background: var(--bg-toggle);
+    opacity: 0.5;
     box-shadow: none;
 }
 
 
 .container {
     background: var(--bg-white);
-    border-radius: 20px;
+    border-radius: 6px;
     padding: 32px;
     max-width: 600px;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    border: 1px solid var(--border);
 }
 
 h1 {
@@ -184,6 +201,10 @@ h1 {
     margin-bottom: 24px;
 }
 
+.button-wrapper {
+    margin-top: 8px;
+}
+
 label {
     display: block;
     margin-bottom: 8px;
@@ -194,13 +215,16 @@ label {
 
 input[type="text"] {
     width: 100%;
-    padding: 12px 16px;
+    padding: 5px 12px;
     background: var(--bg-white);
-    border: 2px solid var(--border);
-    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
     font-size: var(--text-base);
     color: var(--text);
     transition: all 0.2s ease;
+    height: 32px;
+    min-height: 32px;
+    box-sizing: border-box;
 }
 
 input[type="text"]:hover:not(:disabled):not(:focus) {
@@ -211,6 +235,7 @@ input[type="text"]:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--primary-focus);
+    background: var(--bg-white);
 }
 
 input[type="text"]:focus:hover {
@@ -218,8 +243,10 @@ input[type="text"]:focus:hover {
 }
 
 input[type="text"]:disabled {
-    background: var(--bg-disabled);
+    background: var(--bg-light);
     color: var(--text-hint);
+    border-color: var(--border);
+    cursor: not-allowed;
 }
 
 input[type="text"].error {
@@ -263,92 +290,122 @@ input[type="text"].error {
     color: var(--text-hint);
 }
 
+.radio-group-wrapper {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px;
+}
+
+body.theme-dark .radio-group-wrapper {
+    background: var(--bg-toggle);
+    border-color: var(--border);
+}
+
 .radio-group {
     display: flex;
-    gap: 16px;
+    gap: 4px;
     flex-wrap: wrap;
 }
 
 .radio-item {
     display: flex;
     align-items: center;
+    flex: 1;
+    min-width: 0;
 }
 
 input[type="radio"] {
-    margin-right: 6px;
-    cursor: pointer;
-    width: 18px;
-    height: 18px;
-    appearance: none;
-    -webkit-appearance: none;
-    background-color: var(--bg-white);
-    border: 1.5px solid var(--border);
-    border-radius: 50%;
-    position: relative;
-    transition: all 0.2s ease;
-}
-
-input[type="radio"]:hover {
-    border-color: var(--border-hover);
-}
-
-input[type="radio"]:checked {
-    background-color: var(--primary);
-    border-color: var(--primary);
-}
-
-input[type="radio"]::before {
-    content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    width: 8px;
-    height: 8px;
-    background-color: var(--bg-white);
-    border-radius: 50%;
-    transition: transform 0.2s ease;
-}
-
-input[type="radio"]:checked::before {
-    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
 }
 
 .radio-item label {
-    margin: 0;
+    flex: 1;
+    padding: 6px 16px;
+    border-radius: 4px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0;
+    text-align: center;
     font-weight: 500;
     color: var(--text-muted);
+    background: transparent;
+    border: none;
+    user-select: none;
+}
+
+.radio-item label:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.theme-dark .radio-item label:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+input[type="radio"]:checked + label {
+    background: var(--bg-white);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+body.theme-dark input[type="radio"]:checked + label {
+    background: var(--bg-container);
+    color: var(--text);
 }
 
 button {
     width: 100%;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    color: var(--bg-white);
-    border: none;
-    border-radius: 8px;
+    padding: 5px 16px;
+    background: var(--button-primary);
+    color: var(--text-on-button);
+    border: 1px solid rgba(27, 31, 36, 0.15);
+    border-radius: 6px;
     font-size: var(--text-base);
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 6px 20px var(--primary-shadow);
+    box-shadow: none;
+    height: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 button:hover:not(:disabled) {
-    box-shadow: 0 6px 20px var(--primary-shadow);
+    background: var(--button-primary-hover);
+}
+
+button:active:not(:disabled) {
+    background: var(--button-primary-hover);
 }
 
 button:disabled {
     opacity: 0.6;
 }
 
+body.theme-dark button:active:not(:disabled) {
+    background: var(--button-primary-hover);
+}
+
 .result-container {
     margin-top: 24px;
-    padding: 24px;
+    padding: 16px;
     background: var(--bg-light);
-    border-radius: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
     min-height: 140px;
+}
+
+body.theme-dark .result-container {
+    background: var(--bg-body);
+    border-color: var(--border);
 }
 
 .result-label {
@@ -366,14 +423,27 @@ button:disabled {
 
 .result-input {
     flex: 1;
-    padding: 12px 16px;
+    padding: 5px 12px;
     background: var(--bg-white);
-    border: 2px solid var(--primary);
-    border-radius: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
     font-size: var(--text-base);
     color: var(--text);
-    font-weight: 500;
+    font-weight: 400;
     min-width: 0;
+    height: 32px;
+    min-height: 32px;
+    box-sizing: border-box;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+body.theme-dark .result-input {
+    background: var(--bg-body);
+    border-color: var(--border);
+}
+
+body.theme-dark .result-input:not(:disabled) {
+    border-color: var(--primary);
 }
 
 .result-input:disabled {
@@ -381,24 +451,33 @@ button:disabled {
 }
 
 .copy-btn {
-    padding: 12px 16px;
+    padding: 5px 16px;
     background: var(--success);
-    color: var(--bg-white);
-    border: none;
-    border-radius: 8px;
+    color: var(--text-on-button);
+    border: 1px solid rgba(27, 31, 36, 0.15);
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 500;
     font-size: var(--text-base);
     transition: all 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
     width: 130px;
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.35);
+    box-shadow: none;
+    height: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
 .copy-btn:hover:not(:disabled) {
     background: var(--success-dark);
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.35);
+}
+
+.copy-btn:active:not(:disabled) {
+    background: var(--success-dark);
 }
 
 .copy-btn.copied {
@@ -407,11 +486,11 @@ button:disabled {
 
 .copy-btn.error {
     background: var(--error);
-    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.35);
+    box-shadow: none;
 }
 
 .copy-btn.error:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.5);
+    background: var(--error-hover);
 }
 
 .copy-btn:disabled {
@@ -436,13 +515,90 @@ button:disabled {
     font-weight: 600;
 }
 
+.toast {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: var(--text-base);
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 200px;
+    max-width: 400px;
+    opacity: 0;
+    animation: toast-slide-in 0.3s ease-out forwards;
+    pointer-events: none;
+}
+
+.toast.success {
+    border-left: 3px solid var(--success);
+}
+
+.toast.error {
+    border-left: 3px solid var(--error);
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-message {
+    flex: 1;
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes toast-slide-out {
+    from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+}
+
+.toast.hiding {
+    animation: toast-slide-out 0.3s ease-out forwards;
+}
+
+body.theme-dark .toast {
+    background: var(--bg-container);
+    border-color: var(--border);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
 @media (max-width: 640px) {
     .theme-toggle {
         top: 12px;
         right: 12px;
-        width: 40px;
-        height: 40px;
-        padding: 8px;
+        width: 32px;
+        height: 32px;
+        padding: 6px;
     }
 
     .container {
@@ -460,5 +616,12 @@ button:disabled {
 
     .copy-btn {
         width: 100%;
+    }
+
+    .toast {
+        left: 50%;
+        right: auto;
+        max-width: calc(100% - 24px);
+        min-width: auto;
     }
 }
