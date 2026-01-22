@@ -50,7 +50,7 @@
 
                 <div class="form-group">
                     <label for="taskId">ID задачи:</label>
-                    <input type="text" id="taskId" name="taskId" placeholder="ABC-1234 или https://site.com/ABC-1234" aria-describedby="taskIdError taskIdHint" aria-invalid="false">
+                    <input type="text" id="taskId" name="taskId" placeholder="ABC-1234 или https://site.com/ABC-1234" aria-describedby="taskIdError taskIdHint" aria-invalid="false" autocomplete="off" required>
                     <div class="error-message" id="taskIdError" role="alert" aria-live="polite"></div>
                     <div class="hint" id="taskIdHint">Можно вставить ID задачи или ссылку на задачу</div>
                 </div>
@@ -59,7 +59,7 @@
             <section class="section" aria-labelledby="branch-name-label">
                 <div class="form-group">
                     <label for="branchName" id="branch-name-label">Название ветки:</label>
-                    <input type="text" id="branchName" name="branchName" placeholder="Введите название ветки..." aria-describedby="branchNameError" aria-invalid="false">
+                    <input type="text" id="branchName" name="branchName" placeholder="Введите название ветки..." aria-describedby="branchNameError" aria-invalid="false" autocomplete="off" required pattern="[a-zA-Z0-9\s_-]+" title="Только латинские буквы, цифры, пробелы, дефисы и подчёркивания">
                     <div class="error-message" id="branchNameError" role="alert" aria-live="polite"></div>
                 </div>
             </section>

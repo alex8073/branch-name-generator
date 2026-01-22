@@ -28,18 +28,18 @@ const errorUtils = {
     clear(input) {
         if (!input) return;
         input.classList.remove('error');
-        
+        input.setAttribute('aria-invalid', 'false');
         const errorElement = this.getErrorElement(input);
         if (errorElement) {
             errorElement.classList.remove('show');
             errorElement.textContent = '';
         }
     },
-    
+
     show(input, message) {
         if (!input) return;
         input.classList.add('error');
-        
+        input.setAttribute('aria-invalid', 'true');
         const errorElement = this.getErrorElement(input);
         if (errorElement) {
             errorElement.textContent = message;
@@ -108,30 +108,12 @@ const validators = {
     }
 };
 
-document.querySelectorAll('input[name="branchType"]').forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        const isHotfix = e.target.value === 'hotfix';
-        if (elements.taskId) {
-            elements.taskId.disabled = isHotfix;
-            errorUtils.clear(elements.taskId);
-        }
-        errorUtils.clear(elements.branchName);
-    });
-});
-
 const applyTheme = (theme) => {
-    document.documentElement.className = document.documentElement.className.replace(/theme-\w+/g, '');
+    const html = document.documentElement;
+    html.className = html.className.replace(/theme-\w+/g, '');
     if (theme) {
-        document.documentElement.classList.add(`theme-${theme}`);
+        html.classList.add(`theme-${theme}`);
     }
-    
-    if (document.body) {
-        document.body.className = document.body.className.replace(/theme-\w+/g, '');
-        if (theme) {
-            document.body.classList.add(`theme-${theme}`);
-        }
-    }
-    
     try {
         localStorage.setItem(CONSTANTS.THEME_STORAGE_KEY, theme || CONSTANTS.DEFAULT_THEME);
     } catch (e) {
@@ -145,48 +127,13 @@ const toggleTheme = () => {
     applyTheme(newTheme);
 };
 
-const themeToggle = document.getElementById('themeToggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-    themeToggle.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleTheme();
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const htmlHasTheme = document.documentElement.classList.contains('theme-dark') || 
-                         document.documentElement.classList.contains('theme-light');
-    const bodyHasTheme = document.body && (document.body.classList.contains('theme-dark') || 
-                                           document.body.classList.contains('theme-light'));
-    
-    if (!htmlHasTheme && !bodyHasTheme) {
-        try {
-            const savedTheme = localStorage.getItem(CONSTANTS.THEME_STORAGE_KEY) || CONSTANTS.DEFAULT_THEME;
-            applyTheme(savedTheme);
-        } catch (e) {
-            console.warn('Не удалось прочитать тему из localStorage:', e);
-            applyTheme(CONSTANTS.DEFAULT_THEME);
-        }
-    } else if (htmlHasTheme && document.body) {
-        const htmlTheme = Array.from(document.documentElement.classList)
-            .find(cls => cls.startsWith('theme-'));
-        if (htmlTheme) {
-            document.body.className = document.body.className.replace(/theme-\w+/g, '');
-            document.body.classList.add(htmlTheme);
-        }
-    }
-});
-
 const updateResultLength = () => {
     if (!elements.resultInput || !elements.lengthInfo) return;
-    
+
     const length = elements.resultInput.value.length;
     const isValid = length <= CONSTANTS.MAX_BRANCH_LENGTH;
     elements.lengthInfo.className = `length-info ${isValid ? 'valid' : 'invalid'}`;
-    
+
     if (isValid) {
         elements.lengthInfo.textContent = `Длина: ${length} символов ✓`;
     } else {
@@ -200,127 +147,170 @@ const updateResultLength = () => {
     }
 };
 
-if (elements.branchName) {
-    elements.branchName.addEventListener('input', () => {
-        errorUtils.clear(elements.branchName);
-    });
-}
-
-if (elements.taskId) {
-    elements.taskId.addEventListener('input', () => {
-        errorUtils.clear(elements.taskId);
-    });
-}
-
-if (elements.resultInput) {
-    elements.resultInput.addEventListener('input', updateResultLength);
-}
-
-if (elements.form) {
-    elements.form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const branchTypeRadio = document.querySelector('input[name="branchType"]:checked');
-        if (!branchTypeRadio) return;
-        
-        const branchType = branchTypeRadio.value;
-        const taskIdValue = elements.taskId?.value.trim() || '';
-        const branchNameValue = elements.branchName?.value.trim() || '';
-
-        errorUtils.clear(elements.taskId);
-        errorUtils.clear(elements.branchName);
-
-        if (branchType === 'feature') {
-            if (!taskIdValue) {
-                errorUtils.show(elements.taskId, 'Пожалуйста, заполните ID задачи');
-                return;
-            }
-
-            const isUrl = /^https?:\/\//i.test(taskIdValue);
-            if (!isUrl && !validators.isValidBranchName(taskIdValue)) {
-                errorUtils.show(elements.taskId, 'Используйте только латинские буквы, цифры и дефисы');
-                return;
-            }
-
-            const extractedTaskId = validators.extractTaskId(taskIdValue);
-            if (!extractedTaskId) {
-                errorUtils.show(elements.taskId, 'Неверный формат ID (ожидается PROJECT-123)');
-                return;
-            }
-        }
-
-        if (!branchNameValue) {
-            errorUtils.show(elements.branchName, 'Пожалуйста, заполните это поле');
-            return;
-        }
-
-        if (!validators.isValidBranchName(branchNameValue)) {
-            errorUtils.show(elements.branchName, 'Используйте только латинские буквы, цифры и дефисы');
-            return;
-        }
-
-        const normalized = validators.normalizeBranchName(branchNameValue);
-        if (!normalized) {
-            errorUtils.show(elements.branchName, 'Название ветки не может быть пустым');
-            return;
-        }
-        
-        let result = '';
-
-        if (branchType === 'hotfix') {
-            result = `feature/hotfix-${normalized}`;
-        } else {
-            const taskId = validators.extractTaskId(taskIdValue);
-            result = `${branchType}/${taskId}-${normalized}`;
-        }
-
-        if (elements.resultInput) {
-            elements.resultInput.value = result;
-            elements.resultInput.disabled = false;
-        }
-        if (elements.copyBtn) {
-            elements.copyBtn.disabled = false;
-        }
-
-        updateResultLength();
-    });
-}
-
 const copyToClipboard = async (text) => {
     if (!text) return false;
-    
+
     try {
         if (navigator.clipboard?.writeText) {
             await navigator.clipboard.writeText(text);
             return true;
-        } else {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = '0';
-            document.body.appendChild(textArea);
-            textArea.select();
-            const successful = document.execCommand('copy');
-            document.body.removeChild(textArea);
-            return successful;
         }
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return successful;
     } catch (err) {
         console.error('Ошибка при копировании:', err);
         return false;
     }
 };
 
-if (elements.copyBtn && elements.resultInput) {
-    elements.copyBtn.addEventListener('click', async () => {
-        const textToCopy = elements.resultInput?.value;
-        if (!textToCopy) return;
-
-        const success = await copyToClipboard(textToCopy);
-        if (success) {
-            showToast('Скопировано!', 'success');
-        } else {
-            showToast('Ошибка при копировании', 'error');
+document.addEventListener('DOMContentLoaded', () => {
+    const html = document.documentElement;
+    const hasTheme = html.classList.contains('theme-dark') || html.classList.contains('theme-light');
+    if (!hasTheme) {
+        try {
+            const savedTheme = localStorage.getItem(CONSTANTS.THEME_STORAGE_KEY) || CONSTANTS.DEFAULT_THEME;
+            applyTheme(savedTheme);
+        } catch (e) {
+            console.warn('Не удалось прочитать тему из localStorage:', e);
+            applyTheme(CONSTANTS.DEFAULT_THEME);
         }
-    });
-}
+    }
 
+    document.querySelectorAll('input[name="branchType"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const isHotfix = e.target.value === 'hotfix';
+            if (elements.taskId) {
+                elements.taskId.disabled = isHotfix;
+                if (isHotfix) {
+                    elements.taskId.removeAttribute('required');
+                } else {
+                    elements.taskId.setAttribute('required', '');
+                }
+                errorUtils.clear(elements.taskId);
+            }
+            errorUtils.clear(elements.branchName);
+        });
+    });
+
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTheme();
+            }
+        });
+    }
+
+    if (elements.branchName) {
+        elements.branchName.addEventListener('input', () => {
+            errorUtils.clear(elements.branchName);
+        });
+    }
+    if (elements.taskId) {
+        elements.taskId.addEventListener('input', () => {
+            errorUtils.clear(elements.taskId);
+        });
+    }
+
+    if (elements.form) {
+        elements.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const branchTypeRadio = document.querySelector('input[name="branchType"]:checked');
+            if (!branchTypeRadio) return;
+
+            const branchType = branchTypeRadio.value;
+            const taskIdValue = elements.taskId?.value.trim() || '';
+            const branchNameValue = elements.branchName?.value.trim() || '';
+
+            errorUtils.clear(elements.taskId);
+            errorUtils.clear(elements.branchName);
+
+            if (branchType === 'feature') {
+                if (!taskIdValue) {
+                    errorUtils.show(elements.taskId, 'Пожалуйста, заполните ID задачи');
+                    return;
+                }
+
+                const isUrl = /^https?:\/\//i.test(taskIdValue);
+                if (!isUrl && !validators.isValidBranchName(taskIdValue)) {
+                    errorUtils.show(elements.taskId, 'Используйте только латинские буквы, цифры и дефисы');
+                    return;
+                }
+
+                const extractedTaskId = validators.extractTaskId(taskIdValue);
+                if (!extractedTaskId) {
+                    errorUtils.show(elements.taskId, 'Неверный формат ID (ожидается PROJECT-123)');
+                    return;
+                }
+            }
+
+            if (!branchNameValue) {
+                errorUtils.show(elements.branchName, 'Пожалуйста, заполните это поле');
+                return;
+            }
+
+            if (!validators.isValidBranchName(branchNameValue)) {
+                errorUtils.show(elements.branchName, 'Используйте только латинские буквы, цифры и дефисы');
+                return;
+            }
+
+            const normalized = validators.normalizeBranchName(branchNameValue);
+            if (!normalized) {
+                errorUtils.show(elements.branchName, 'Название ветки не может быть пустым');
+                return;
+            }
+
+            let result = '';
+
+            if (branchType === 'hotfix') {
+                result = `feature/hotfix-${normalized}`;
+            } else {
+                const taskId = validators.extractTaskId(taskIdValue);
+                result = `${branchType}/${taskId}-${normalized}`;
+            }
+
+            if (elements.resultInput) {
+                elements.resultInput.value = result;
+                elements.resultInput.disabled = false;
+            }
+            if (elements.copyBtn) {
+                elements.copyBtn.disabled = false;
+            }
+
+            updateResultLength();
+        });
+    }
+
+    let copyBtnStateTimeoutId = null;
+    if (elements.copyBtn && elements.resultInput) {
+        elements.copyBtn.addEventListener('click', async () => {
+            const textToCopy = elements.resultInput?.value;
+            if (!textToCopy) return;
+
+            if (copyBtnStateTimeoutId) clearTimeout(copyBtnStateTimeoutId);
+            elements.copyBtn.classList.remove('copied', 'error');
+            const success = await copyToClipboard(textToCopy);
+            if (success) {
+                elements.copyBtn.classList.add('copied');
+                showToast('Скопировано!', 'success');
+            } else {
+                elements.copyBtn.classList.add('error');
+                showToast('Ошибка при копировании', 'error');
+            }
+            copyBtnStateTimeoutId = setTimeout(() => {
+                elements.copyBtn.classList.remove('copied', 'error');
+                copyBtnStateTimeoutId = null;
+            }, CONSTANTS.TOAST_DISPLAY_DURATION + CONSTANTS.TOAST_HIDE_ANIMATION);
+        });
+    }
+});
