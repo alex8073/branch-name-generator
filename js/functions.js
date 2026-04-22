@@ -86,7 +86,7 @@ const validators = {
         if (!str || typeof str !== 'string') return false;
         const trimmed = str.trim();
         if (trimmed.length === 0) return false;
-        const allowedPattern = /^[a-zA-Z0-9\s_-]+$/;
+        const allowedPattern = /^[a-zA-Z0-9\s-]+$/;
         return allowedPattern.test(trimmed);
     },
     
@@ -101,10 +101,10 @@ const validators = {
         return name
             .toLowerCase()
             .trim()
-            .replace(/[^a-z0-9\s_-]/g, '')
-            .replace(/[\s-]+/g, '_')
-            .replace(/_+/g, '_')
-            .replace(/^_|_$/g, '');
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/[\s-]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
     }
 };
 
@@ -184,17 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('input[name="branchType"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const isHotfix = e.target.value === 'hotfix';
-            if (elements.taskId) {
-                elements.taskId.disabled = isHotfix;
-                if (isHotfix) {
-                    elements.taskId.removeAttribute('required');
-                } else {
-                    elements.taskId.setAttribute('required', '');
-                }
-                errorUtils.clear(elements.taskId);
-            }
+        radio.addEventListener('change', () => {
+            errorUtils.clear(elements.taskId);
             errorUtils.clear(elements.branchName);
         });
     });
@@ -235,23 +226,21 @@ document.addEventListener('DOMContentLoaded', () => {
             errorUtils.clear(elements.taskId);
             errorUtils.clear(elements.branchName);
 
-            if (branchType === 'feature') {
-                if (!taskIdValue) {
-                    errorUtils.show(elements.taskId, 'Пожалуйста, заполните ID задачи');
-                    return;
-                }
+            if (!taskIdValue) {
+                errorUtils.show(elements.taskId, 'Пожалуйста, заполните ID задачи');
+                return;
+            }
 
-                const isUrl = /^https?:\/\//i.test(taskIdValue);
-                if (!isUrl && !validators.isValidBranchName(taskIdValue)) {
-                    errorUtils.show(elements.taskId, 'Используйте только латинские буквы, цифры и дефисы');
-                    return;
-                }
+            const isUrl = /^https?:\/\//i.test(taskIdValue);
+            if (!isUrl && !validators.isValidBranchName(taskIdValue)) {
+                errorUtils.show(elements.taskId, 'Используйте только латинские буквы, цифры и дефисы');
+                return;
+            }
 
-                const extractedTaskId = validators.extractTaskId(taskIdValue);
-                if (!extractedTaskId) {
-                    errorUtils.show(elements.taskId, 'Неверный формат ID (ожидается PROJECT-123)');
-                    return;
-                }
+            const extractedTaskId = validators.extractTaskId(taskIdValue);
+            if (!extractedTaskId) {
+                errorUtils.show(elements.taskId, 'Неверный формат ID (ожидается PROJECT-123)');
+                return;
             }
 
             if (!branchNameValue) {
@@ -270,14 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            let result = '';
-
-            if (branchType === 'hotfix') {
-                result = `feature/hotfix-${normalized}`;
-            } else {
-                const taskId = validators.extractTaskId(taskIdValue);
-                result = `${branchType}/${taskId}-${normalized}`;
-            }
+            const taskId = validators.extractTaskId(taskIdValue);
+            const result = `${branchType}/${taskId}-${normalized}`;
 
             if (elements.resultInput) {
                 elements.resultInput.value = result;

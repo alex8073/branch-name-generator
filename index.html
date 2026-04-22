@@ -41,6 +41,10 @@
                                 <label for="feature">feature</label>
                             </div>
                             <div class="radio-item">
+                                <input type="radio" id="fix" name="branchType" value="fix">
+                                <label for="fix">fix</label>
+                            </div>
+                            <div class="radio-item">
                                 <input type="radio" id="hotfix" name="branchType" value="hotfix">
                                 <label for="hotfix">hotfix</label>
                             </div>
@@ -59,7 +63,7 @@
             <section class="section" aria-labelledby="branch-name-label">
                 <div class="form-group">
                     <label for="branchName" id="branch-name-label">Название ветки:</label>
-                    <input type="text" id="branchName" name="branchName" placeholder="Введите название ветки..." aria-describedby="branchNameError" aria-invalid="false" autocomplete="off" required pattern="[a-zA-Z0-9\s_-]+" title="Только латинские буквы, цифры, пробелы, дефисы и подчёркивания">
+                    <input type="text" id="branchName" name="branchName" placeholder="Введите название ветки..." aria-describedby="branchNameError" aria-invalid="false" autocomplete="off" required pattern="[a-zA-Z0-9\s-]+" title="Только латинские буквы, цифры, пробелы и дефисы">
                     <div class="error-message" id="branchNameError" role="alert" aria-live="polite"></div>
                 </div>
             </section>
